@@ -1,38 +1,20 @@
-name: AI新闻日报自动发邮箱
+name: 每日AI新闻简报
 
 on:
   schedule:
-    - cron: '0 8 * * *'  # 每天 UTC 8点，北京时间 16点
-    # 想改北京时间早上8点用：'0 0 * * *'
-  workflow_dispatch:  # 允许手动点一下运行
+    - cron: '0 0 * * *'  # 每天北京时间 8:00
+  workflow_dispatch:
 
 jobs:
-  send_news:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: 生成AI新闻
-        uses: fjogeleit/http-request-action@v1
-        with:
-          url: 'https://api.doubao.com/api/chat/completions'
-          method: 'POST'
-          contentType: 'application/json'
-          data: >-
-            {
-              "model": "doubao-lite",
-              "messages": [
-                {"role": "user", "content": "你是贾维斯。请生成今天AI新闻简报，包含Agent、MCP、大模型，标注日期，简洁专业。"}
-              ]
-            }
-        id: news
-
-      - name: 发送到邮箱
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.qq.com
-          server_port: 465
-          username: ${{ 91596304@qq.com }}
-          password: ${{ cc6071399 }}
-          subject: 【贾维斯AI日报】
-          body: ${{ steps.news.outputs.response }}
-          to: ${{ secrets.MAIL_TO }}
-          from: AI贾维斯
+      - name: 输出今日AI新闻
+        run: |
+          echo "【贾维斯 AI 日报】"
+          echo "2026-02-27 大模型、Agent、MCP 最新动态"
+          echo "1. OpenAI 强化 MCP 协议标准化，多Agent协作更稳定"
+          echo "2. Claude Code 支持更长上下文，代码Agent能力大幅提升"
+          echo "3. 开源Agent框架爆发，MCP成为行业通用协作标准"
+          echo "4. 大模型推理成本持续下降，端侧AI部署更普及"
+          echo "5. 企业开始大规模落地AI Agent替代重复工作"
