@@ -1,0 +1,38 @@
+name: AI新闻日报自动发邮箱
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # 每天 UTC 8点，北京时间 16点
+    # 想改北京时间早上8点用：'0 0 * * *'
+  workflow_dispatch:  # 允许手动点一下运行
+
+jobs:
+  send_news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 生成AI新闻
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://api.doubao.com/api/chat/completions'
+          method: 'POST'
+          contentType: 'application/json'
+          data: >-
+            {
+              "model": "doubao-lite",
+              "messages": [
+                {"role": "user", "content": "你是贾维斯。请生成今天AI新闻简报，包含Agent、MCP、大模型，标注日期，简洁专业。"}
+              ]
+            }
+        id: news
+
+      - name: 发送到邮箱
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.qq.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: 【贾维斯AI日报】
+          body: ${{ steps.news.outputs.response }}
+          to: ${{ secrets.MAIL_TO }}
+          from: AI贾维斯
