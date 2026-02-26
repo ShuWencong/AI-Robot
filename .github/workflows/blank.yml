@@ -19,9 +19,10 @@ jobs:
           GROUP_ID="2025760618228753282"
 
           echo "正在调用 Minimax API..."
-          RESULT=$(curl -s "https://api.minimax.chat/v1/text/chatcompletion?GroupId=$GROUP_ID" \
+          RESULT=$(curl -s "https://api.minimax.chat/v1/chat/completions" \
             -H "Authorization: Bearer $API_KEY" \
             -H "Content-Type: application/json" \
+            -H "GroupId: $GROUP_ID" \
             -d '{
               "model": "MiniMax-M2.1",
               "messages": [
@@ -30,15 +31,19 @@ jobs:
                   "content": "你是贾维斯。请生成今天最新的AI行业简报，只包含Agent、MCP、大模型，每条标注日期，总共5条，简洁专业，不要多余格式。"
                 }
               ],
-              "temperature": 0.2
+              "temperature": 0.2,
+              "max_tokens": 500,
+              "stream": false
             }')
 
           echo "API 原始响应: $RESULT"
 
-          if echo "$RESULT" | jq -e '.data.reply' > /dev/null; then
-            CONTENT=$(echo "$RESULT" | jq -r '.data.reply')
+          if echo "$RESULT" | jq -e '.choices[0].message.content' > /dev/null; then
+            CONTENT=$(echo "$RESULT" | jq -r '.choices[0].message.content')
+          elif echo "$RESULT" | jq -e '.error' > /dev/null; then
+            CONTENT="API 调用失败，错误: $(echo "$RESULT" | jq -r '.error.message')"
           else
-            CONTENT="API 调用失败，返回内容: $RESULT"
+            CONTENT="API 返回格式异常: $RESULT"
           fi
 
           echo "content=$CONTENT" >> $GITHUB_OUTPUT
