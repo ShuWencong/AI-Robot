@@ -28,7 +28,7 @@ jobs:
               "messages": [
                 {
                   "role": "user",
-                  "content": "你是贾维斯。请生成今天最新的AI行业简报，只包含Agent、MCP、大模型，每条标注日期，总共5条，简洁专业，不要多余格式。"
+                  "content": "请直接生成5条关于Agent、MCP、大模型的AI行业简报，每条标注日期，不要使用工具调用或思考过程。"
                 }
               ],
               "temperature": 0.2,
@@ -38,15 +38,23 @@ jobs:
 
           echo "API 原始响应: $RESULT"
 
+          # 使用更安全的方式解析并转义内容
           if echo "$RESULT" | jq -e '.choices[0].message.content' > /dev/null; then
-            CONTENT=$(echo "$RESULT" | jq -r '.choices[0].message.content')
+            # 使用jq的@json函数转义特殊字符
+            CONTENT=$(echo "$RESULT" | jq -r '.choices[0].message.content | @json')
+            # 移除外层引号
+            CONTENT="${CONTENT%\"}"
+            CONTENT="${CONTENT#\"}"
           elif echo "$RESULT" | jq -e '.error' > /dev/null; then
             CONTENT="API 调用失败，错误: $(echo "$RESULT" | jq -r '.error.message')"
           else
-            CONTENT="API 返回格式异常: $RESULT"
+            CONTENT="API 返回格式异常"
           fi
 
-          echo "content=$CONTENT" >> $GITHUB_OUTPUT
+          # 使用EOF避免特殊字符问题
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          echo "$CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: 输出内容（自动发GitHub邮件）
         run: echo "${{ steps.get_news.outputs.content }}"
