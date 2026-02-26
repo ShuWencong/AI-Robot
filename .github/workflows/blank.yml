@@ -30,8 +30,8 @@ jobs:
         with:
           server_address: smtp.qq.com
           server_port: 465
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
+          username: ${{ 91596304@qq.com }}
+          password: ${{ cc6071399 }}
           subject: 【贾维斯AI日报】
           body: ${{ steps.news.outputs.response }}
           to: ${{ secrets.MAIL_TO }}
