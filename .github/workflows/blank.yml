@@ -16,7 +16,7 @@ jobs:
         id: get_news
         run: |
           API_KEY="sk-api-g_fL1Sz_Ht6gWJxqdvlMkCzkzfg0HrJCjHmBxXHs5y8je5R2Hz9TD9FoGhFvKLSv-rKuq5gJsDwwzcuSF4O5eWbdEQ635tkM7pgVi7QAybca9tIsW9XsPmw"
-          GROUP_ID="1735292221622235"
+          GROUP_ID="2025760618228753282"
 
           echo "正在调用 Minimax API..."
           RESULT=$(curl -s "https://api.minimax.chat/v1/text/chatcompletion?GroupId=$GROUP_ID" \
