@@ -1,39 +1,39 @@
-name: 每日AI新闻简报
+name: 每日AI新闻简报（Minimax）
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 每天北京时间 8:00 运行
-  workflow_dispatch:     # 允许手动触发测试
+    - cron: '0 0 * * *'  # 北京时间 每天 8:00
+  workflow_dispatch:
 
 jobs:
-  generate-news:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: 安装依赖
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y curl jq
+      - name: 安装工具
+        run: sudo apt-get update && sudo apt-get install -y curl jq
 
-      - name: 生成今日AI新闻
-        id: generate_news
+      - name: 获取AI新闻
+        id: get_news
         run: |
-          # 定义新闻生成的提示词
-          PROMPT="你是贾维斯。请生成今天最新的AI新闻简报，只包含Agent、MCP、大模型方向，每条标注日期，总共5条以内，不要多余格式。"
-          
-          # 调用豆包API生成新闻（这里使用模拟响应，实际部署时可替换为真实API调用）
-          # 注意：以下为模拟响应，实际使用时需要接入真实的AI服务API
-          NEWS_CONTENT="【贾维斯 AI 日报】
-          $(date +%Y-%m-%d) Agent、MCP、大模型 最新动态：
-          1. OpenAI 强化 MCP 协议标准化，多Agent协作稳定性提升30%
-          2. Claude Code 支持100万token上下文，代码Agent调试能力大幅提升
-          3. 开源Agent框架爆发，MCP成为行业通用协作标准
-          4. 大模型推理成本持续下降，端侧AI部署成本降低40%
-          5. 企业开始大规模落地AI Agent替代重复工作，效率提升5倍"
-          
-          # 将新闻内容写入文件并设置为输出
-          echo "$NEWS_CONTENT" > news.txt
-          echo "content=$(cat news.txt)" >> $GITHUB_OUTPUT
+          API_KEY="sk-api-g_fL1Sz_Ht6gWJxqdvlMkCzkzfg0HrJCjHmBxXHs5y8je5R2Hz9TD9FoGhFvKLSv-rKuq5gJsDwwzcuSF4O5eWbdEQ635tkM7pgVi7QAybca9tIsW9XsPmw"
+          GROUP_ID="1735292221622235"
 
-      - name: 输出新闻内容
-        run: |
-          echo "${{ steps.generate_news.outputs.content }}"
+          RESULT=$(curl -s "https://api.minimax.chat/v1/text/chatcompletion?GroupId=$GROUP_ID" \
+            -H "Authorization: Bearer $API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "model": "abab6.5-chat",
+              "messages": [
+                {
+                  "role": "user",
+                  "content": "你是贾维斯。请生成今天最新的AI行业简报，只包含Agent、MCP、大模型，每条标注日期，总共5条，简洁专业，不要多余格式。"
+                }
+              ],
+              "temperature": 0.2
+            }')
+
+          CONTENT=$(echo "$RESULT" | jq -r '.data.reply')
+          echo "content=$CONTENT" >> $GITHUB_OUTPUT
+
+      - name: 输出内容（自动发GitHub邮件）
+        run: echo "${{ steps.get_news.outputs.content }}"
