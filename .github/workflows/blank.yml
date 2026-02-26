@@ -18,11 +18,12 @@ jobs:
           API_KEY="sk-api-g_fL1Sz_Ht6gWJxqdvlMkCzkzfg0HrJCjHmBxXHs5y8je5R2Hz9TD9FoGhFvKLSv-rKuq5gJsDwwzcuSF4O5eWbdEQ635tkM7pgVi7QAybca9tIsW9XsPmw"
           GROUP_ID="1735292221622235"
 
+          echo "正在调用 Minimax API..."
           RESULT=$(curl -s "https://api.minimax.chat/v1/text/chatcompletion?GroupId=$GROUP_ID" \
             -H "Authorization: Bearer $API_KEY" \
             -H "Content-Type: application/json" \
             -d '{
-              "model": "abab6.5-chat",
+              "model": "MiniMax-M2.5",
               "messages": [
                 {
                   "role": "user",
@@ -32,7 +33,14 @@ jobs:
               "temperature": 0.2
             }')
 
-          CONTENT=$(echo "$RESULT" | jq -r '.data.reply')
+          echo "API 原始响应: $RESULT"
+
+          if echo "$RESULT" | jq -e '.data.reply' > /dev/null; then
+            CONTENT=$(echo "$RESULT" | jq -r '.data.reply')
+          else
+            CONTENT="API 调用失败，返回内容: $RESULT"
+          fi
+
           echo "content=$CONTENT" >> $GITHUB_OUTPUT
 
       - name: 输出内容（自动发GitHub邮件）
